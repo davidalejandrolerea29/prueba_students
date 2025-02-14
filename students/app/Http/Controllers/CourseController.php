@@ -1,6 +1,8 @@
 <?php
 
+
 namespace App\Http\Controllers;
+
 use App\Models\Student;
 use App\Models\Course;
 use Illuminate\Http\Request;
@@ -8,37 +10,28 @@ use Carbon\Carbon;
 
 class CourseController extends Controller
 {
-    // Muestra todos los cursos con la cantidad de estudiantes
+    // Obtener todos los cursos con la cantidad de estudiantes
     public function index()
     {
         $courses = Course::withCount('students')->get();
-        return view('courses.index', compact('courses'));
+        return response()->json($courses);
     }
 
-    // Muestra los cursos con más estudiantes en los últimos 6 meses
+    // Obtener los cursos con más estudiantes en los últimos 6 meses
     public function topCourses()
     {
-       
-    
         $sixMonthsAgo = Carbon::now()->subMonths(6);
-    
+
         $topCourses = Course::withCount('students')
             ->where('start_date', '>=', $sixMonthsAgo)
             ->orderByDesc('students_count')
             ->take(3)
             ->get();
-    
-        return view('courses.topcourses', compact('topCourses'));
-    }
-    
-    
-    // Muestra el formulario para crear un nuevo curso
-    public function create()
-    {
-        return view('courses.create');
+
+        return response()->json($topCourses);
     }
 
-    // Almacena un nuevo curso
+    // Crear un nuevo curso
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -48,18 +41,17 @@ class CourseController extends Controller
             'end_date' => 'required|date|after_or_equal:start_date',
         ]);
 
-        // Crear el curso con los datos validados
-        Course::create($validated);
-        return redirect()->route('courses.index')->with('success', 'Course created successfully!');
+        $course = Course::create($validated);
+        return response()->json(['message' => 'Course created successfully!', 'course' => $course], 201);
     }
 
-    // Muestra el formulario para editar un curso
-    public function edit(Course $course)
+    // Obtener un curso específico
+    public function show(Course $course)
     {
-        return view('courses.edit', compact('course'));
+        return response()->json($course);
     }
 
-    // Actualiza un curso existente
+    // Actualizar un curso existente
     public function update(Request $request, Course $course)
     {
         $validated = $request->validate([
@@ -70,43 +62,31 @@ class CourseController extends Controller
         ]);
 
         $course->update($validated);
-        return redirect()->route('courses.index')->with('success', 'Course updated successfully!');
+        return response()->json(['message' => 'Course updated successfully!', 'course' => $course]);
     }
 
-    // Asigna un estudiante a un curso
-   
-    // Muestra el formulario para asignar un estudiante a un curso
-// CourseController.php
-
-// Muestra el formulario para asignar un estudiante al curso
-public function showAssignForm(Course $course)
-{
-    $students = Student::all(); // Asegúrate de que esta relación esté bien definida y que los estudiantes estén disponibles
-
-    return view('courses.assign_student', compact('course', 'students'));
-}
-
-// Asigna un estudiante al curso
-public function assignStudent(Request $request, Course $course)
-{
-    $request->validate([
-        'student_id' => 'required|exists:students,id',
-    ]);
-
-    $course->students()->attach($request->student_id);
-
-    return redirect()->route('courses.index')->with('success', 'Student assigned to course successfully');
-}
-
-public function show(Course $course)
-{
-    return view('courses.show', compact('course'));
-}
-
-    // Elimina un curso
+    // Eliminar un curso
     public function destroy(Course $course)
     {
         $course->delete();
-        return redirect()->route('courses.index')->with('success', 'Course deleted successfully');
+        return response()->json(['message' => 'Course deleted successfully']);
+    }
+
+    // Obtener estudiantes asignados a un curso
+    public function getStudents(Course $course)
+    {
+        return response()->json($course->students);
+    }
+
+    // Asignar un estudiante a un curso
+    public function assignStudent(Request $request, Course $course)
+    {
+        $request->validate([
+            'student_id' => 'required|exists:students,id',
+        ]);
+
+        $course->students()->attach($request->student_id);
+
+        return response()->json(['message' => 'Student assigned to course successfully']);
     }
 }

@@ -1,29 +1,30 @@
 <?php
 
 namespace App\Http\Controllers;
+use Illuminate\Support\Facades\Http;
+use App\Models\Student;
+use Illuminate\Http\Request;
+
+namespace App\Http\Controllers;
 
 use App\Models\Student;
 use Illuminate\Http\Request;
 
 class StudentController extends Controller
 {
+    // Obtener todos los estudiantes en formato JSON
     public function index()
     {
-        // Obtiene todos los estudiantes junto con sus cursos
-        $students = Student::with('courses')->get();
-        return view('students.index', compact('students'));
-    }
-    
+        // Obtener todos los estudiantes
+        $students = Student::all();
 
-    public function create()
-    {
-        // Muestra el formulario de creación
-        return view('students.create');
+        // Devolver los estudiantes en formato JSON
+        return response()->json($students);
     }
 
+    // Crear un nuevo estudiante
     public function store(Request $request)
     {
-        // Validación de los datos
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
@@ -31,23 +32,20 @@ class StudentController extends Controller
             'email' => 'required|email|unique:students,email',
         ]);
 
-        // Crea el estudiante
-        Student::create($validated);
-
-        // Redirige a la lista de estudiantes
-        return redirect()->route('students.index')->with('success', 'Student created successfully!');
+        $student = Student::create($validated);
+        return response()->json(['message' => 'Student created successfully!', 'student' => $student], 201);
     }
 
-    public function edit($id)
+    // Obtener un estudiante específico
+    public function show($id)
     {
-        // Obtiene el estudiante por su ID
-        $student = Student::findOrFail($id);
-        return view('students.edit', compact('student'));
+        $student = Student::with('courses')->findOrFail($id);
+        return response()->json(['student' => $student], 200);
     }
 
+    // Actualizar un estudiante
     public function update(Request $request, $id)
     {
-        // Valida los datos
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
@@ -55,21 +53,19 @@ class StudentController extends Controller
             'email' => 'required|email|unique:students,email,' . $id,
         ]);
 
-        // Actualiza el estudiante
         $student = Student::findOrFail($id);
         $student->update($validated);
 
-        // Redirige a la lista de estudiantes con un mensaje
-        return redirect()->route('students.index')->with('success', 'Student updated successfully!');
+        return response()->json(['message' => 'Student updated successfully!', 'student' => $student], 200);
     }
 
+    // Eliminar un estudiante
     public function destroy($id)
     {
-        // Elimina el estudiante por su ID
         $student = Student::findOrFail($id);
         $student->delete();
 
-        // Redirige a la lista de estudiantes con un mensaje
-        return redirect()->route('students.index')->with('success', 'Student deleted successfully!');
+        return response()->json(['message' => 'Student deleted successfully!'], 200);
     }
 }
+
