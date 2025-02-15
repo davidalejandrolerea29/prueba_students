@@ -2,6 +2,18 @@
 
 use Illuminate\Support\Facades\Route;
 
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "web" middleware group. Make something great!
+|
+*/
+
+
 // Página de inicio
 Route::get('/', function () {
     return view('students.index');
@@ -20,7 +32,3 @@ Route::view('/courses/{course}/assign_student', 'courses.assign_student')->name(
 
 // Página de cursos populares
 Route::view('/topcourses', 'courses.topcourses')->name('courses.topCourses');
-
-
-
-

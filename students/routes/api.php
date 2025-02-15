@@ -1,11 +1,23 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\CourseController;
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register API routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "api" middleware group. Make something great!
+|
+*/
 
-Route::middleware('api')->group(function () {
-
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
+});
 Route::apiResource('students', StudentController::class);
 Route::apiResource('courses', CourseController::class);
 
@@ -17,4 +29,3 @@ Route::post('courses/{course}/assign-student', [CourseController::class, 'assign
 
 // Adjuntar un estudiante a un curso (parece redundante con assignStudent, ¿lo necesitas?)
 Route::post('courses/{course}/students/{student}', [CourseController::class, 'attachStudent']);
-});
